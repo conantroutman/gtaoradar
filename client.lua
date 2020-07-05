@@ -1,31 +1,43 @@
+local isRadarExtended = false
+local timer = 0
+
 Citizen.CreateThread(function()
+	SetRadarBigmapEnabled(false, false)
 	while true do
 		Citizen.Wait(1)
 		if IsControlJustReleased(0, 20) then -- 20 is z
 			Citizen.Wait(25)
 			if not isRadarExtended then
-				extendRadar()
+				ExtendRadar()
 			elseif isRadarExtended	then
-				minimizeRadar()
+				MinimizeRadar()
 			end
+		end
+
+		if isRadarExtended and timer == 0 then
+			MinimizeRadar()
 		end
 	end
 end)
 
-function extendRadar()
+function ExtendRadar()
+	StartTimer(10)
 	SetRadarBigmapEnabled(true, false)
-	LastGameTimer = GetGameTimer()
 	isRadarExtended = true
-
-	Citizen.SetTimeout(10000, function()
-		if isRadarExtended then
-			minimizeRadar()
-		end
-	  end)
 end
 
-function minimizeRadar()
+function MinimizeRadar()
+	timer = 0
 	SetRadarBigmapEnabled(false, false)
-	LastGameTimer = 0
 	isRadarExtended = false
+end
+
+function StartTimer(time)
+	timer = time
+	Citizen.CreateThread(function()
+		while isRadarExtended do
+			Citizen.Wait(1000)
+			timer = timer-1
+		end
+	end)
 end
